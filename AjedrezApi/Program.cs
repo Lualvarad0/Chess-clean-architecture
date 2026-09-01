@@ -28,11 +28,11 @@ builder.Services.AddCors(opciones => opciones.AddPolicy(PoliticaCorsBlazor, poli
 
 var app = builder.Build();
 
-// Sin migraciones todavía: para el ejercicio basta con crear el esquema si no existe.
+// Aplica las migraciones de EF Core (crea la base y el esquema si no existen todavía).
 using (var scope = app.Services.CreateScope())
 {
     var contexto = scope.ServiceProvider.GetRequiredService<AjedrezDbContext>();
-    contexto.Database.EnsureCreated();
+    contexto.Database.Migrate();
 
     if (!contexto.EntradasLibroApertura.Any())
     {
