@@ -1,5 +1,8 @@
 # Ajedrez — Clean Architecture
 
+[![CI](https://github.com/Lualvarad0/Chess-clean-architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/Lualvarad0/Chess-clean-architecture/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Ejercicio de aprendizaje: un juego de ajedrez completo (motor de reglas, IA rival y frontend web) construido en **.NET 10** siguiendo **Clean Architecture**, para practicar patrones tácticos de DDD que no se usan a diario (Specification, Domain Events, CQRS) fuera de un contexto laboral.
 
 ## Qué incluye
