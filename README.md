@@ -58,7 +58,11 @@ Clean_Arquitecture.slnx
 2. Clic derecho sobre la solución → **Configurar proyectos de inicio** → **Varios proyectos de inicio** → pon `AjedrezApi` y `AjedrezWeb` en **Inicio**, ambos con el perfil **http** (no https).
 3. **F5** o **Ctrl+F5**.
 
-No hace falta preparar la base de datos a mano: `AjedrezApi` crea el esquema en SQL Server LocalDB (y siembra el libro de aperturas) automáticamente al arrancar si no existen.
+No hace falta preparar la base de datos a mano: `AjedrezApi` aplica las migraciones de EF Core en SQL Server LocalDB (y siembra el libro de aperturas) automáticamente al arrancar si no existen.
+
+### Esquema de la base de datos
+
+El esquema está versionado como migraciones de EF Core en `Infrastructure/Persistencia/Migraciones/`. Si prefieres crear la base a mano (sin correr la app), el script SQL equivalente —generado directamente desde la migración con `dotnet ef migrations script --idempotent`, así que siempre coincide con el modelo real— está en [`Scripts/esquema-base-datos.sql`](Scripts/esquema-base-datos.sql).
 
 ## Tests
 
