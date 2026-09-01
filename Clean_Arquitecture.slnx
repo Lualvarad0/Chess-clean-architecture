@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Ajedrez.Application.Tests/Ajedrez.Application.Tests.csproj" />
+    <Project Path="Tests/Ajedrez.Domain.Tests/Ajedrez.Domain.Tests.csproj" />
+    <Project Path="Tests/Ajedrez.Infrastructure.Tests/Ajedrez.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Project Path="Ajedrez.Shared/Ajedrez.Shared.csproj" />
+  <Project Path="AjedrezApi/AjedrezApi.csproj" />
+  <Project Path="AjedrezWeb/AjedrezWeb.csproj" />
+  <Project Path="Application/Ajedrez.Application.csproj" />
+  <Project Path="Domain/Ajedrez.Domain.csproj" />
+  <Project Path="Infrastructure/Ajedrez.Infrastructure.csproj" />
+</Solution>
