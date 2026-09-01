@@ -1,0 +1,354 @@
+@page "/"
+@inject AjedrezApiClient ApiClient
+@using Ajedrez.Shared.Dtos
+
+<PageTitle>Ajedrez</PageTitle>
+
+<h1>Ajedrez</h1>
+
+@if (MensajeError is not null)
+{
+    <div class="alerta-error">@MensajeError</div>
+}
+
+@if (MostrarSelectorNivel)
+{
+    <SelectorNivelModal OnNivelElegido="ElegirNivelInicialAsync" />
+}
+else if (Partida is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    @if (MostrarNotificacionJaque)
+    {
+        <div class="notificacion-jaque">¡Jaque!</div>
+    }
+
+    <div class="contenedor-juego">
+        <div class="columna-tablero">
+            <Tablero Partida="Partida" CasillaSeleccionada="@CasillaSeleccionada" DestinosLegales="DestinosLegales"
+                     UltimoMovimiento="UltimoMovimiento" UltimoMovimientoFueCaptura="UltimoMovimientoFueCaptura"
+                     OnCasillaClick="ManejarClickCasillaAsync" />
+
+            @if (PromocionPendiente is not null)
+            {
+                <SelectorPromocion OnPiezaElegida="CompletarPromocionAsync" />
+            }
+
+            <div class="estado-partida">
+                <span class="insignia insignia-turno" style="--turno-color:@(Partida.TurnoActual == "Blanco" ? "#fefefe" : "#1a1a1a")">
+                    Turno: @Partida.TurnoActual
+                </span>
+                <span class="insignia @ClaseInsigniaEstado">@TraducirEstado(Partida.Estado)</span>
+                @if (Partida.Resultado is not null)
+                {
+                    <span class="resultado-partida">
+                        @Partida.Resultado.Motivo@(Partida.Resultado.Ganador is not null ? $" — gana {Partida.Resultado.Ganador}" : "")
+                    </span>
+                }
+            </div>
+
+            <div class="bandeja-capturadas">
+                <div class="fila-capturadas">
+                    <span class="etiqueta">Capturadas (blancas)</span>
+                    @foreach (var simbolo in PiezasCapturadasDe("Blanco"))
+                    {
+                        <span>@simbolo</span>
+                    }
+                </div>
+                <div class="fila-capturadas">
+                    <span class="etiqueta">Capturadas (negras)</span>
+                    @foreach (var simbolo in PiezasCapturadasDe("Negro"))
+                    {
+                        <span>@simbolo</span>
+                    }
+                </div>
+            </div>
+
+            @if (UltimoMovimiento is not null)
+            {
+                <p class="ultimo-movimiento-texto">
+                    Último movimiento: <strong>@($"{UltimoMovimiento.Origen}-{UltimoMovimiento.Destino}")</strong>
+                    @(UltimoMovimientoFueCaptura ? " (captura)" : "")
+                </p>
+            }
+
+            @if (Cargando)
+            {
+                <p class="indicador-pensando">La IA está pensando…</p>
+            }
+        </div>
+
+        <div class="panel-inferior">
+            <PanelControl Nivel="@Nivel" IaAutomatica="IaAutomatica" Deshabilitado="@(Cargando || PartidaTerminada)"
+                          OnNuevaPartida="ReiniciarPartidaAsync" OnJugadaIA="PedirJugadaIAAsync"
+                          OnNivelCambiado="n => Nivel = n" OnIaAutomaticaCambiada="v => IaAutomatica = v" />
+
+            <HistorialMovimientos Movimientos="Partida.Historial" Modo="@ModoHistorial" OnModoCambiado="m => ModoHistorial = m" />
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly (string Tipo, int CantidadInicial)[] ConteoInicialPorTipo =
+    [
+        ("Dama", 1), ("Torre", 2), ("Alfil", 2), ("Caballo", 2), ("Peon", 8)
+    ];
+
+    private bool MostrarSelectorNivel = true;
+    private PartidaDto? Partida;
+    private string? CasillaSeleccionada;
+    private IReadOnlyList<string> DestinosLegales = [];
+    private string? MensajeError;
+    private bool Cargando;
+    private string Nivel = "Dificil";
+    private string ModoHistorial = "Nombres";
+    private bool IaAutomatica = true;
+    private string? PromocionPendiente;
+    private bool UltimoMovimientoFueCaptura;
+    private bool MostrarNotificacionJaque;
+    private string? EstadoAnterior;
+    private bool _procesandoClick;
+
+    private bool PartidaTerminada => Partida?.Estado == "Finalizada";
+    private MovimientoDto? UltimoMovimiento => Partida is { Historial.Count: > 0 } ? Partida.Historial[^1] : null;
+
+    private string ClaseInsigniaEstado => Partida?.Estado switch
+    {
+        "Jaque" => "insignia-estado-jaque",
+        "Finalizada" => "insignia-estado-finalizada",
+        _ => "insignia-estado-encurso"
+    };
+
+    private async Task ElegirNivelInicialAsync(string nivel)
+    {
+        Nivel = nivel;
+        MostrarSelectorNivel = false;
+        await IniciarPartidaAsync();
+    }
+
+    private async Task ReiniciarPartidaAsync() => await IniciarPartidaAsync();
+
+    private async Task IniciarPartidaAsync()
+    {
+        Cargando = true;
+        MensajeError = null;
+        CasillaSeleccionada = null;
+        DestinosLegales = [];
+        PromocionPendiente = null;
+        UltimoMovimientoFueCaptura = false;
+        MostrarNotificacionJaque = false;
+        EstadoAnterior = null;
+
+        try
+        {
+            Partida = await ApiClient.IniciarPartidaAsync();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"No se pudo iniciar la partida: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task ManejarClickCasillaAsync(string casilla)
+    {
+        // Evita procesar un clic mientras otro sigue en curso (p. ej. un doble clic físico
+        // rápido), para que nunca se pisen dos actualizaciones de estado a la vez.
+        if (_procesandoClick)
+            return;
+
+        _procesandoClick = true;
+        try
+        {
+            await ProcesarClickCasillaAsync(casilla);
+        }
+        finally
+        {
+            _procesandoClick = false;
+        }
+    }
+
+    private async Task ProcesarClickCasillaAsync(string casilla)
+    {
+        if (Partida is null || Cargando || PartidaTerminada || PromocionPendiente is not null)
+            return;
+
+        if (CasillaSeleccionada is null)
+        {
+            await SeleccionarSiEsPropiaAsync(casilla);
+            return;
+        }
+
+        if (casilla == CasillaSeleccionada)
+        {
+            CasillaSeleccionada = null;
+            DestinosLegales = [];
+            return;
+        }
+
+        if (!DestinosLegales.Contains(casilla))
+        {
+            CasillaSeleccionada = null;
+            DestinosLegales = [];
+            await SeleccionarSiEsPropiaAsync(casilla);
+            return;
+        }
+
+        var piezaOrigen = Partida.Tablero.Piezas.First(p => p.Posicion == CasillaSeleccionada);
+        bool esPromocion = piezaOrigen.TipoPieza == "Peon" && (casilla.EndsWith('1') || casilla.EndsWith('8'));
+
+        if (esPromocion)
+        {
+            PromocionPendiente = $"{CasillaSeleccionada}|{casilla}";
+            return;
+        }
+
+        await RealizarMovimientoAsync(CasillaSeleccionada!, casilla, null);
+    }
+
+    private async Task SeleccionarSiEsPropiaAsync(string casilla)
+    {
+        var pieza = Partida!.Tablero.Piezas.FirstOrDefault(p => p.Posicion == casilla);
+        if (pieza is null || pieza.Color != Partida.TurnoActual)
+            return;
+
+        // Cargando bloquea nuevos clics mientras este fetch está en vuelo: sin esto, un segundo
+        // clic (el destino) podía llegar antes de que DestinosLegales se actualizara y se
+        // interpretaba contra la lista vieja (vacía), forzando a hacer clic 2-3 veces.
+        CasillaSeleccionada = casilla;
+        Cargando = true;
+        try
+        {
+            var resultado = await ApiClient.ObtenerMovimientosLegalesAsync(Partida.Id, casilla);
+            DestinosLegales = resultado.Destinos;
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task CompletarPromocionAsync(string pieza)
+    {
+        if (PromocionPendiente is null)
+            return;
+
+        var partes = PromocionPendiente.Split('|');
+        PromocionPendiente = null;
+        await RealizarMovimientoAsync(partes[0], partes[1], pieza);
+    }
+
+    private async Task RealizarMovimientoAsync(string origen, string destino, string? promocionA)
+    {
+        Cargando = true;
+        MensajeError = null;
+
+        try
+        {
+            var resultado = await ApiClient.HacerMovimientoAsync(Partida!.Id, new HacerMovimientoRequestDto(origen, destino, promocionA));
+            CasillaSeleccionada = null;
+            DestinosLegales = [];
+
+            if (resultado.Exitoso)
+            {
+                ActualizarPartida(resultado.Datos!);
+
+                if (IaAutomatica && !PartidaTerminada)
+                {
+                    // Pausa mínima solo para separar visualmente tu jugada de la respuesta de la
+                    // IA (que ahora se desliza, ya no aparece de golpe) sin sentirse lenta.
+                    await Task.Delay(120);
+                    await PedirJugadaIAInternoAsync();
+                }
+            }
+            else
+            {
+                MensajeError = resultado.MensajeError;
+            }
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task PedirJugadaIAAsync()
+    {
+        Cargando = true;
+        MensajeError = null;
+        try
+        {
+            await PedirJugadaIAInternoAsync();
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task PedirJugadaIAInternoAsync()
+    {
+        if (Partida is null || PartidaTerminada)
+            return;
+
+        var resultado = await ApiClient.ObtenerJugadaIAAsync(Partida.Id, Nivel);
+        if (resultado.Exitoso)
+            ActualizarPartida(resultado.Datos!);
+        else
+            MensajeError = resultado.MensajeError;
+    }
+
+    private void ActualizarPartida(PartidaDto nueva)
+    {
+        int piezasAntes = Partida?.Tablero.Piezas.Count ?? nueva.Tablero.Piezas.Count;
+        UltimoMovimientoFueCaptura = nueva.Tablero.Piezas.Count < piezasAntes;
+        Partida = nueva;
+
+        if (nueva.Estado == "Jaque" && EstadoAnterior != "Jaque")
+        {
+            MostrarNotificacionJaque = true;
+            _ = OcultarNotificacionJaqueLuegoAsync();
+        }
+
+        EstadoAnterior = nueva.Estado;
+    }
+
+    private async Task OcultarNotificacionJaqueLuegoAsync()
+    {
+        await Task.Delay(2200);
+        MostrarNotificacionJaque = false;
+        StateHasChanged();
+    }
+
+    private IReadOnlyList<string> PiezasCapturadasDe(string color)
+    {
+        if (Partida is null)
+            return [];
+
+        var actuales = Partida.Tablero.Piezas.Where(p => p.Color == color).ToLookup(p => p.TipoPieza);
+        var resultado = new List<string>();
+
+        foreach (var (tipo, cantidadInicial) in ConteoInicialPorTipo)
+        {
+            int capturadas = cantidadInicial - actuales[tipo].Count();
+            for (int i = 0; i < capturadas; i++)
+                resultado.Add(SimbolosPiezas.De(tipo, color));
+        }
+
+        return resultado;
+    }
+
+    private static string TraducirEstado(string estado) => estado switch
+    {
+        "EnCurso" => "En curso",
+        "Jaque" => "¡Jaque!",
+        "Finalizada" => "Finalizada",
+        _ => estado
+    };
+}

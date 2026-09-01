@@ -1,0 +1,11 @@
+<div class="selector-promocion">
+    <p>Elige la pieza para la promoción:</p>
+    <button class="btn btn-outline-dark" @onclick='() => OnPiezaElegida.InvokeAsync("Dama")'>♕ Dama</button>
+    <button class="btn btn-outline-dark" @onclick='() => OnPiezaElegida.InvokeAsync("Torre")'>♖ Torre</button>
+    <button class="btn btn-outline-dark" @onclick='() => OnPiezaElegida.InvokeAsync("Alfil")'>♗ Alfil</button>
+    <button class="btn btn-outline-dark" @onclick='() => OnPiezaElegida.InvokeAsync("Caballo")'>♘ Caballo</button>
+</div>
+
+@code {
+    [Parameter] public EventCallback<string> OnPiezaElegida { get; set; }
+}

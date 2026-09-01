@@ -1,0 +1,52 @@
+@using Ajedrez.Shared.Dtos
+
+<div class="historial">
+    <div class="historial-encabezado">
+        <h4>Historial</h4>
+        <select class="historial-modo" @onchange="e => OnModoCambiado.InvokeAsync(e.Value!.ToString())">
+            <option value="Nombres" selected="@(Modo == "Nombres")">Nombres</option>
+            <option value="Coordenadas" selected="@(Modo == "Coordenadas")">Coordenadas</option>
+            <option value="Ambos" selected="@(Modo == "Ambos")">Ambos</option>
+        </select>
+    </div>
+    <ol>
+        @for (int i = 0; i < Movimientos.Count; i += 2)
+        {
+            var indice = i;
+            var blanco = Movimientos[indice];
+            var negro = indice + 1 < Movimientos.Count ? Movimientos[indice + 1] : null;
+            <li>
+                <span class="jugada-blanca">@FormatoMovimiento(blanco)</span>
+                @if (negro is not null)
+                {
+                    <span class="jugada-negra">@FormatoMovimiento(negro)</span>
+                }
+            </li>
+        }
+    </ol>
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<MovimientoDto> Movimientos { get; set; } = [];
+    [Parameter] public string Modo { get; set; } = "Nombres";
+    [Parameter] public EventCallback<string> OnModoCambiado { get; set; }
+
+    private static string NombrePieza(string tipo) => tipo switch
+    {
+        "Peon" => "Peón",
+        _ => tipo
+    };
+
+    private string FormatoMovimiento(MovimientoDto movimiento)
+    {
+        var nombrePieza = NombrePieza(movimiento.PiezaMovida);
+        var sufijoPromocion = movimiento.PromocionA is null ? "" : $"={NombrePieza(movimiento.PromocionA)}";
+
+        return Modo switch
+        {
+            "Coordenadas" => $"{movimiento.Origen}-{movimiento.Destino}{sufijoPromocion}",
+            "Ambos" => $"{nombrePieza} {movimiento.Origen}-{movimiento.Destino}{sufijoPromocion}",
+            _ => $"{nombrePieza} a {movimiento.Destino}{sufijoPromocion}"
+        };
+    }
+}

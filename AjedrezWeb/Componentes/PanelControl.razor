@@ -1,0 +1,34 @@
+<div class="panel-control">
+    <button class="btn btn-primary" @onclick="() => OnNuevaPartida.InvokeAsync()">Nueva partida</button>
+
+    <label class="control-nivel">
+        Nivel de la IA:
+        <select @onchange="e => OnNivelCambiado.InvokeAsync(e.Value!.ToString())">
+            <option value="Facil" selected="@(Nivel == "Facil")">Fácil</option>
+            <option value="Dificil" selected="@(Nivel == "Dificil")">Difícil</option>
+            <option value="Profesional" selected="@(Nivel == "Profesional")">Profesional</option>
+        </select>
+    </label>
+
+    <label class="control-checkbox">
+        <input type="checkbox" checked="@IaAutomatica" @onchange="e => OnIaAutomaticaCambiada.InvokeAsync((bool)e.Value!)" />
+        La IA juega automáticamente
+    </label>
+
+    @if (!IaAutomatica)
+    {
+        <button class="btn btn-secondary" disabled="@Deshabilitado" @onclick="() => OnJugadaIA.InvokeAsync()">
+            Jugada de la IA
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public string Nivel { get; set; } = "Dificil";
+    [Parameter] public bool IaAutomatica { get; set; } = true;
+    [Parameter] public bool Deshabilitado { get; set; }
+    [Parameter] public EventCallback OnNuevaPartida { get; set; }
+    [Parameter] public EventCallback OnJugadaIA { get; set; }
+    [Parameter] public EventCallback<string> OnNivelCambiado { get; set; }
+    [Parameter] public EventCallback<bool> OnIaAutomaticaCambiada { get; set; }
+}

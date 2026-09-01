@@ -1,0 +1,78 @@
+@using Ajedrez.Shared.Dtos
+
+<div class="marco-tablero">
+    <div class="tablero">
+        @for (int filaVisual = 7; filaVisual >= 0; filaVisual--)
+        {
+            var fila = filaVisual;
+            <div class="fila-tablero">
+                <span class="coordenada coordenada-fila">@(fila + 1)</span>
+                @for (int columna = 0; columna < 8; columna++)
+                {
+                    var casilla = $"{(char)('a' + columna)}{fila + 1}";
+                    var esClara = (fila + columna) % 2 != 0;
+                    var pieza = ObtenerPieza(casilla);
+                    var esSeleccionada = casilla == CasillaSeleccionada;
+                    var esDestinoLegal = DestinosLegales.Contains(casilla);
+                    var esUltimoOrigen = casilla == UltimoMovimiento?.Origen;
+                    var esUltimoDestino = casilla == UltimoMovimiento?.Destino;
+                    var claseUltimoMovimiento = esUltimoDestino && UltimoMovimientoFueCaptura
+                        ? "ultimo-movimiento-captura"
+                        : (esUltimoOrigen || esUltimoDestino ? "ultimo-movimiento" : "");
+
+                    <div class="casilla @(esClara ? "clara" : "oscura") @(esSeleccionada ? "seleccionada" : "") @(esDestinoLegal ? "destino-legal" : "") @claseUltimoMovimiento"
+                         @onclick="() => OnCasillaClick.InvokeAsync(casilla)">
+                        @if (pieza is not null)
+                        {
+                            var clavePieza = $"{casilla}:{pieza.TipoPieza}:{pieza.Color}";
+                            var esLaQueSeMovio = esUltimoDestino && UltimoMovimiento is not null;
+                            var estiloDeslizamiento = esLaQueSeMovio ? EstiloDeslizamiento(UltimoMovimiento!) : "";
+
+                            <span @key="clavePieza"
+                                  class="pieza @(pieza.Color == "Blanco" ? "pieza-blanca" : "pieza-negra") @(esLaQueSeMovio ? "pieza-en-movimiento" : "")"
+                                  style="@estiloDeslizamiento">
+                                @SimboloDePieza(pieza.TipoPieza, pieza.Color)
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        <div class="fila-coordenadas-columnas">
+            <span class="coordenada"></span>
+            @for (int columna = 0; columna < 8; columna++)
+            {
+                <span class="coordenada coordenada-columna">@((char)('a' + columna))</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public PartidaDto? Partida { get; set; }
+    [Parameter] public string? CasillaSeleccionada { get; set; }
+    [Parameter] public IReadOnlyList<string> DestinosLegales { get; set; } = [];
+    [Parameter] public MovimientoDto? UltimoMovimiento { get; set; }
+    [Parameter] public bool UltimoMovimientoFueCaptura { get; set; }
+    [Parameter] public EventCallback<string> OnCasillaClick { get; set; }
+
+    private CasillaDto? ObtenerPieza(string casilla) => Partida?.Tablero.Piezas.FirstOrDefault(p => p.Posicion == casilla);
+
+    private static string SimboloDePieza(string tipo, string color) => SimbolosPiezas.De(tipo, color);
+
+    // La pieza que se acaba de mover arranca la animación desde la posición de origen: se calcula
+    // el desplazamiento en casillas y se anima con transform desde ahí hasta (0,0), dando la
+    // sensación de que la pieza se desliza en vez de simplemente aparecer en el destino.
+    private static string EstiloDeslizamiento(MovimientoDto movimiento)
+    {
+        int colOrigen = movimiento.Origen[0] - 'a';
+        int filaOrigen = movimiento.Origen[1] - '1';
+        int colDestino = movimiento.Destino[0] - 'a';
+        int filaDestino = movimiento.Destino[1] - '1';
+
+        int deltaX = colOrigen - colDestino;
+        int deltaY = filaDestino - filaOrigen;
+
+        return $"--desde-x:{deltaX};--desde-y:{deltaY};";
+    }
+}

@@ -1,0 +1,25 @@
+<div class="modal-overlay">
+    <div class="modal-tarjeta">
+        <h2>Elige el nivel del rival</h2>
+        <p class="modal-subtexto">Podrás cambiarlo más adelante desde el panel de la partida.</p>
+
+        <div class="opciones-nivel">
+            <button class="opcion-nivel" @onclick='() => OnNivelElegido.InvokeAsync("Facil")'>
+                <span class="opcion-nivel-titulo">Fácil</span>
+                <span class="opcion-nivel-detalle">Ideal para aprender — el rival explora aperturas variadas y busca poco.</span>
+            </button>
+            <button class="opcion-nivel" @onclick='() => OnNivelElegido.InvokeAsync("Dificil")'>
+                <span class="opcion-nivel-titulo">Difícil</span>
+                <span class="opcion-nivel-detalle">Un buen desafío — favorece las líneas que le han funcionado y busca más profundo.</span>
+            </button>
+            <button class="opcion-nivel" @onclick='() => OnNivelElegido.InvokeAsync("Profesional")'>
+                <span class="opcion-nivel-titulo">Profesional</span>
+                <span class="opcion-nivel-detalle">Juega siempre su mejor línea conocida y busca a la mayor profundidad.</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<string> OnNivelElegido { get; set; }
+}
