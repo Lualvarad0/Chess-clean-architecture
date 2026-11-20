@@ -81,4 +81,13 @@ dotnet test
 
 ## Stack
 
-.NET 10 · ASP.NET Core Web API · Blazor WebAssembly · Entity Framework Core · SQL Server (LocalDB) · MediatR · FluentValidation · xUnit
+<p align="left">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dot-net/dot-net-plain.svg" title=".NET 10" alt=".NET" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-plain.svg" title="C#" alt="C#" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blazor/blazor-original.svg" title="Blazor WebAssembly" alt="Blazor" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/entityframeworkcore/entityframeworkcore-plain.svg" title="Entity Framework Core" alt="EF Core" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" title="SQL Server" alt="SQL Server" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-plain.svg" title="GitHub Actions (CI)" alt="GitHub Actions" width="42" height="42"/>
+</p>
+
+`ASP.NET Core` · `MediatR` · `FluentValidation` · `xUnit` — sin logo propio, pero parte del stack (Web API, CQRS, validación y tests).
