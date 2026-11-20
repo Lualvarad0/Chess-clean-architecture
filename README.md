@@ -81,13 +81,13 @@ dotnet test
 
 ## Stack
 
-![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white)
-![C#](https://img.shields.io/badge/C%23-239120?style=flat-square)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-512BD4?style=flat-square)
-![Blazor WebAssembly](https://img.shields.io/badge/Blazor_WASM-512BD4?style=flat-square&logo=blazor&logoColor=white)
-![Entity Framework Core](https://img.shields.io/badge/EF_Core-512BD4?style=flat-square)
-![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=flat-square)
-![MediatR](https://img.shields.io/badge/MediatR-1E6FD9?style=flat-square)
-![FluentValidation](https://img.shields.io/badge/FluentValidation-4B32C3?style=flat-square)
-![xUnit](https://img.shields.io/badge/xUnit-512BD4?style=flat-square)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+<p align="left">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dot-net/dot-net-plain.svg" title=".NET 10" alt=".NET" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-plain.svg" title="C#" alt="C#" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blazor/blazor-original.svg" title="Blazor WebAssembly" alt="Blazor" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/entityframeworkcore/entityframeworkcore-plain.svg" title="Entity Framework Core" alt="EF Core" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" title="SQL Server" alt="SQL Server" width="42" height="42"/>&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-plain.svg" title="GitHub Actions (CI)" alt="GitHub Actions" width="42" height="42"/>
+</p>
+
+`ASP.NET Core` · `MediatR` · `FluentValidation` · `xUnit` — sin logo propio, pero parte del stack (Web API, CQRS, validación y tests).
